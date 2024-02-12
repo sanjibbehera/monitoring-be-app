@@ -2,11 +2,17 @@ const httpStatus = require('http-status');
 const pick = require('../utils/pick');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
-const { userService } = require('../services');
+const { userService, accountValidationService } = require('../services');
 
 const createUser = catchAsync(async (req, res) => {
-  const user = await userService.createUser(req.body);
-  res.status(httpStatus.CREATED).send(user);
+  const isValidAccount = await accountValidationService.isValidAccount(req.body.accountId, req.body.regeion);
+  if (isValidAccount) {
+    const user = await userService.createUser(req.body);
+    res.status(httpStatus.CREATED).send(user);
+  } else {
+    res.status(httpStatus.NOT_FOUND).send("Account Id is not valid.");
+  }
+
 });
 
 const getUsers = catchAsync(async (req, res) => {
