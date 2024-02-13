@@ -7,6 +7,7 @@ const register = {
     password: Joi.string().required().custom(password),
     name: Joi.string().required(),
     accountId: Joi.string().required(),
+    region: Joi.string().required(),
   }),
 };
 

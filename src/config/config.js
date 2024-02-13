@@ -50,6 +50,11 @@ module.exports = {
     resetPasswordExpirationMinutes: envVars.JWT_RESET_PASSWORD_EXPIRATION_MINUTES,
     verifyEmailExpirationMinutes: envVars.JWT_VERIFY_EMAIL_EXPIRATION_MINUTES,
   },
+  aws: {
+    accessKeyId: envVars.AWS_ACCESS_KEY,
+    secretAccessKey: envVars.AWS_SECRET_ACCESS_KEY,
+    region: envVars.AWS_REGION
+  },
   // email: {
   //   smtp: {
   //     host: envVars.SMTP_HOST,

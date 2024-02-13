@@ -43,6 +43,9 @@ const userSchema = mongoose.Schema(
     accountId: {
       type: String
     },
+    region: {
+      type: String
+    },
     isEmailVerified: {
       type: Boolean,
       default: false,
