@@ -123,4 +123,13 @@ const getCPUdetails = async (req, res) => {
     res.status(500).send("Not Found");
   }
 };
-module.exports = { saveEc2Services, getCPUdetails , getEc2Services };
+
+const getDataStorageDetails = async(req,res) => {
+  const data = await awsServices.getDataStorageDetails();
+  if (data) {
+    res.status(201).send({ data });
+  } else {
+    res.status(500).send("Not Found");
+  }
+}
+module.exports = { saveEc2Services, getCPUdetails , getEc2Services ,getDataStorageDetails };

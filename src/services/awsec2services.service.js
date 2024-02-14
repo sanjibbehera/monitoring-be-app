@@ -1,5 +1,6 @@
 const awsConfig = require("./awsConfig.service");
 const { EC2 } = require("../models");
+const { exec } = require("child_process");
 
 const AWS = awsConfig();
 const sts = new AWS.STS();
@@ -80,32 +81,91 @@ const createServiceDetails = async (data) => {
 };
 
 const getCpuDetailsService = async () => {
-  const cloudwatch = new AWS.CloudWatch();
-
-  // Parameters for the metric query
-  const params = {
-    StartTime: new Date(Date.now() - 3600000), // 1 hour ago
-    EndTime: new Date(),
-    MetricName: "CPUUtilization",
-    Namespace: "AWS/EC2",
-    Period: 300, // 5 minutes
-    Statistics: ["Average"],
-    Dimensions: [
-      {
-        Name: "InstanceId",
-        Value: "i-0c993f5e5d0f4eaca", // Replace with your EC2 instance ID
-      },
-    ],
+  const sts = new AWS.STS();
+  const assumeRoleParams = {
+    RoleArn: "arn:aws:iam::767397878280:role/MonitoringAppsAWSAccessRole",
+    RoleSessionName: "AssumeRoleSession2",
   };
 
-  // Call the getMetricStatistics method
-  cloudwatch.getMetricStatistics(params, (err, data) => {
+  sts.assumeRole(assumeRoleParams, (err, data) => {
     if (err) {
-      console.error("Error retrieving CPU utilization:", err);
-    } else {
-      console.log("CPU Utilization:", data.Datapoints);
+      console.error("Error assuming role:", err);
+      return;
     }
+
+    // Configuring AWS SDK with temporary credentials
+    const credentials = {
+      accessKeyId: data.Credentials.AccessKeyId,
+      secretAccessKey: data.Credentials.SecretAccessKey,
+      sessionToken: data.Credentials.SessionToken,
+    };
+    AWS.config.update({ credentials });
+
+    // CloudWatch API
+    const cloudwatch = new AWS.CloudWatch();
+
+    // Parameters for GetMetricStatistics
+    const params = {
+      StartTime: new Date(Date.now() - 600000), // 10 minutes ago
+      EndTime: new Date(),
+      MetricName: "CPUUtilization",
+      Namespace: "AWS/EC2",
+      Period: 3600,
+      Statistics: ["Maximum"],
+      Dimensions: [
+        {
+          Name: "InstanceId",
+          Value: "i-0a14b796b6a5c7958",
+        },
+      ],
+    };
+
+    // Fetch CPUUtilization metric
+    cloudwatch.getMetricStatistics(params, (err, data) => {
+      if (err) {
+        console.error("Error fetching metric:", err);
+        return;
+      }
+      if (data.Datapoints.length > 0) {
+        console.log("Latest CPU Utilization:", data.Datapoints);
+      } else {
+        console.log("No data available for the specified time range.");
+      }
+    });
   });
+};
+
+const getDataStorageDetails = async () => {
+  const sts = new AWS.STS();
+
+  try {
+    // Assume the role
+    const data = await sts
+      .assumeRole({
+        RoleArn: "arn:aws:iam::767397878280:role/MonitoringAppsAWSAccessRole",
+        RoleSessionName: "sessionName",
+      })
+      .promise();
+
+    // Set the credentials with the assumed role
+    const assumedCredentials = data.Credentials;
+
+    AWS.config.update({
+      accessKeyId: assumedCredentials.AccessKeyId,
+      secretAccessKey: assumedCredentials.SecretAccessKey,
+      sessionToken: assumedCredentials.SessionToken,
+    });
+
+    // Now create an EC2 client with the assumed credentials
+    const ec2 = new AWS.EC2();
+
+    // Describe volumes
+    const volumes = await ec2.describeVolumes().promise();
+    return volumes;
+  } catch (error) {
+    console.error("Error:", error);
+    throw error; // Rethrow the error for handling outside this function if needed
+  }
 };
 
 const getEc2ServicesData = async (accountId) => {
@@ -121,4 +181,5 @@ module.exports = {
   createServiceDetails,
   getCpuDetailsService,
   getEc2ServicesData,
+  getDataStorageDetails,
 };
