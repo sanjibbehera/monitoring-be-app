@@ -12,7 +12,7 @@ router.post("/addClientSetting", settingController.createClientSetting);
 
 router.get("/saveEc2Services", awsController.saveEc2Services);
 
-router.get("/getCPUDetails", awsController.getCPUdetails);
+router.get("/getEC2Details", awsController.getCPUdetails);
 
 router.get("/getStorageDetails", awsController.getDataStorageDetails);
 

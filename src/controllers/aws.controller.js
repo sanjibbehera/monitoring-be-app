@@ -118,7 +118,7 @@ const getEc2Services = async (req,res) => {
 const getCPUdetails = async (req, res) => {
   const data = await awsServices.getCpuDetailsService();
   if (data) {
-    res.status(201).send({ saveData });
+    res.status(201).send({ data });
   } else {
     res.status(500).send("Not Found");
   }

@@ -82,16 +82,16 @@ const createServiceDetails = async (data) => {
 
 const getCpuDetailsService = async () => {
   const sts = new AWS.STS();
+
+  const dynamicSessionName = `EC2Services_role2_${Date.now()}`;
+
   const assumeRoleParams = {
     RoleArn: "arn:aws:iam::767397878280:role/MonitoringAppsAWSAccessRole",
-    RoleSessionName: "AssumeRoleSession2",
+    RoleSessionName: dynamicSessionName,
   };
 
-  sts.assumeRole(assumeRoleParams, (err, data) => {
-    if (err) {
-      console.error("Error assuming role:", err);
-      return;
-    }
+  try {
+    const data = await sts.assumeRole(assumeRoleParams).promise();
 
     // Configuring AWS SDK with temporary credentials
     const credentials = {
@@ -121,29 +121,34 @@ const getCpuDetailsService = async () => {
     };
 
     // Fetch CPUUtilization metric
-    cloudwatch.getMetricStatistics(params, (err, data) => {
-      if (err) {
-        console.error("Error fetching metric:", err);
-        return;
-      }
-      if (data.Datapoints.length > 0) {
-        console.log("Latest CPU Utilization:", data.Datapoints);
-      } else {
-        console.log("No data available for the specified time range.");
-      }
-    });
-  });
+    const ec2 = new AWS.EC2();
+    const data_c = await cloudwatch.getMetricStatistics(params).promise();
+    const volumes = await ec2.describeVolumes().promise();
+    console.log(data_c);
+    return datas = {
+      "metrics" : data_c,
+      "volumes" : volumes
+    }
+    
+  } catch (error) {
+    console.error("Error:", error);
+    throw error; // Rethrow the error for handling outside this function if needed
+  }
 };
+
 
 const getDataStorageDetails = async () => {
   const sts = new AWS.STS();
+
+  // Generate a dynamic session name
+  const dynamicSessionName = `EC2Services_role1_${Date.now()}`;
 
   try {
     // Assume the role
     const data = await sts
       .assumeRole({
         RoleArn: "arn:aws:iam::767397878280:role/MonitoringAppsAWSAccessRole",
-        RoleSessionName: "sessionName",
+        RoleSessionName: dynamicSessionName,
       })
       .promise();
 
