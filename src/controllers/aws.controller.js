@@ -110,9 +110,9 @@ const saveEc2Services = async (req, res) => {
   }
 };
 
-const getEc2Services = async (req,res) => {
+const getEc2Services = async (req, res) => {
   const data = await awsServices.getEc2ServicesData(req.params.accountId);
-  res.status(200).send({ data : data});
+  res.status(200).send({ data: data });
 };
 
 const getCPUdetails = async (req, res) => {
@@ -124,12 +124,27 @@ const getCPUdetails = async (req, res) => {
   }
 };
 
-const getDataStorageDetails = async(req,res) => {
+const getDataStorageDetails = async (req, res) => {
   const data = await awsServices.getDataStorageDetails();
   if (data) {
     res.status(201).send({ data });
   } else {
     res.status(500).send("Not Found");
   }
-}
-module.exports = { saveEc2Services, getCPUdetails , getEc2Services ,getDataStorageDetails };
+};
+
+const getEc2StorageUtilization = async (req, res) => {
+  const data = await awsServices.getEc2StorageUtilization(req.params.accountId);
+  if (data) {
+    res.status(201).send({ cpu: data.data_cpu, disk: data.data_storage });
+  } else {
+    res.status(500).send("Not Found");
+  }
+};
+module.exports = {
+  saveEc2Services,
+  getCPUdetails,
+  getEc2Services,
+  getDataStorageDetails,
+  getEc2StorageUtilization,
+};

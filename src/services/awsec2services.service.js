@@ -2,6 +2,8 @@ const awsConfig = require("./awsConfig.service");
 const { EC2 } = require("../models");
 const { exec } = require("child_process");
 const Ec2Details = require("../models/ec2.model");
+const EC2storage = require("../models/ec2storage.model");
+const EC2utilization = require("../models/ec2utilization.model");
 
 const AWS = awsConfig();
 const sts = new AWS.STS();
@@ -28,7 +30,25 @@ const getSubscribedServices = async () => {
     // Now you can fetch EC2 instances using the assumed role's credentials
     return getEC2Instances();
   } catch (error) {
-    console.error("Error assuming role:", error);
+    // If the error is due to expired credentials, refresh the credentials and retry
+    if (error.code === "ExpiredToken") {
+      // Refresh the assumed role
+      data = await sts.assumeRole(assumeRoleParams).promise();
+
+      // Update the credentials with new temporary credentials
+      credentials = {
+        accessKeyId: data.Credentials.AccessKeyId,
+        secretAccessKey: data.Credentials.SecretAccessKey,
+        sessionToken: data.Credentials.SessionToken,
+      };
+      AWS.config.update({ credentials });
+
+      // Retry the operation
+      return await getCpuDetailsService();
+    } else {
+      console.error("Error:", error);
+      throw error; // Rethrow the error for handling outside this function if needed
+    }
   }
 };
 
@@ -137,10 +157,44 @@ const getCpuDetailsService = async () => {
     const ec2 = new AWS.EC2();
     const volumes = await ec2.describeVolumes().promise();
 
-    return (datas = {
+    const datainfo = {
       metrics: results,
-      volumes: volumes,
-    });
+      volumesdisk: volumes,
+    };
+
+    for (const metric of datainfo.metrics) {
+      const infou = {
+        accountId: "767397878280",
+        instanceId: metric.instanceId.instanceId,
+        cpuData: metric.data,
+      };
+
+      EC2utilization.create(infou);
+    }
+
+    for (const volume of datainfo.volumesdisk.Volumes) {
+      const infov = {
+        accountId: "767397878280",
+        instanceId: volume.Attachments[0].InstanceId,
+        attachments: volume.Attachments,
+        availabilityZone: volume.AvailabilityZone,
+        createTime: volume.CreateTime,
+        encrypted: volume.Encrypted,
+        kmsKeyId: volume.KmsKeyId,
+        size: volume.Size,
+        snapshotId: volume.SnapshotId,
+        state: volume.State,
+        volumeId: volume.VolumeId,
+        iops: volume.Iops,
+        tags: volume.Tags,
+        volumeType: volume.VolumeType,
+        multiAttachEnabled: volume.MultiAttachEnabled,
+        throughput: volume.Throughput,
+      };
+      EC2storage.create(infov);
+    }
+
+    return datainfo;
   } catch (error) {
     // If the error is due to expired credentials, refresh the credentials and retry
     if (error.code === "ExpiredToken") {
@@ -208,10 +262,28 @@ const getEc2ServicesData = async (accountId) => {
   return data;
 };
 
+const getEc2StorageUtilization = async (accountId) => {
+  const data_storage = await EC2storage.find({
+    accountId: accountId,
+  });
+
+  const data_cpu = await EC2utilization.find({
+    accountId: accountId,
+  });
+
+  const info = {
+    data_storage : data_storage,
+    data_cpu : data_cpu
+  }
+
+  return info;
+};
+
 module.exports = {
   getSubscribedServices,
   createServiceDetails,
   getCpuDetailsService,
   getEc2ServicesData,
   getDataStorageDetails,
+  getEc2StorageUtilization
 };
