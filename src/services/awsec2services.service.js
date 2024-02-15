@@ -4,6 +4,7 @@ const { exec } = require("child_process");
 const Ec2Details = require("../models/ec2.model");
 const EC2storage = require("../models/ec2storage.model");
 const EC2utilization = require("../models/ec2utilization.model");
+const assumeCredentials = require("./assumeRoleCredentials.service");
 
 const AWS = awsConfig();
 const sts = new AWS.STS();
@@ -102,18 +103,14 @@ const createServiceDetails = async (data) => {
 };
 
 const getCpuDetailsService = async () => {
-  const sts = new AWS.STS();
-
-  const dynamicSessionName = `EC2Services_role2_${Date.now()}`;
-
-  const assumeRoleParams = {
-    RoleArn: "arn:aws:iam::767397878280:role/MonitoringAppsAWSAccessRole",
-    RoleSessionName: dynamicSessionName,
-  };
-
   const results = [];
 
   try {
+    const assumeRoleParams = {
+      RoleArn: "arn:aws:iam::767397878280:role/MonitoringAppsAWSAccessRole",
+      RoleSessionName: "Monitoring_session",
+    };
+
     const data = await sts.assumeRole(assumeRoleParams).promise();
 
     // Configuring AWS SDK with temporary credentials
@@ -196,9 +193,12 @@ const getCpuDetailsService = async () => {
 
     return datainfo;
   } catch (error) {
+    console.log("hi");
+    console.log(error.code);
     // If the error is due to expired credentials, refresh the credentials and retry
     if (error.code === "ExpiredToken") {
       // Refresh the assumed role
+      // await assumeCredentials.refreshAssumeCredentials(assumeRoleParams);
       data = await sts.assumeRole(assumeRoleParams).promise();
 
       // Update the credentials with new temporary credentials
@@ -215,42 +215,6 @@ const getCpuDetailsService = async () => {
       console.error("Error:", error);
       throw error; // Rethrow the error for handling outside this function if needed
     }
-  }
-};
-
-const getDataStorageDetails = async () => {
-  const sts = new AWS.STS();
-
-  // Generate a dynamic session name
-  const dynamicSessionName = `EC2Services_role1_${Date.now()}`;
-
-  try {
-    // Assume the role
-    const data = await sts
-      .assumeRole({
-        RoleArn: "arn:aws:iam::767397878280:role/MonitoringAppsAWSAccessRole",
-        RoleSessionName: dynamicSessionName,
-      })
-      .promise();
-
-    // Set the credentials with the assumed role
-    const assumedCredentials = data.Credentials;
-
-    AWS.config.update({
-      accessKeyId: assumedCredentials.AccessKeyId,
-      secretAccessKey: assumedCredentials.SecretAccessKey,
-      sessionToken: assumedCredentials.SessionToken,
-    });
-
-    // Now create an EC2 client with the assumed credentials
-    const ec2 = new AWS.EC2();
-
-    // Describe volumes
-    const volumes = await ec2.describeVolumes().promise();
-    return volumes;
-  } catch (error) {
-    console.error("Error:", error);
-    throw error; // Rethrow the error for handling outside this function if needed
   }
 };
 
@@ -272,9 +236,9 @@ const getEc2StorageUtilization = async (accountId) => {
   });
 
   const info = {
-    data_storage : data_storage,
-    data_cpu : data_cpu
-  }
+    data_storage: data_storage,
+    data_cpu: data_cpu,
+  };
 
   return info;
 };
@@ -284,6 +248,5 @@ module.exports = {
   createServiceDetails,
   getCpuDetailsService,
   getEc2ServicesData,
-  getDataStorageDetails,
-  getEc2StorageUtilization
+  getEc2StorageUtilization,
 };

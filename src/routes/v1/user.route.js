@@ -15,8 +15,6 @@ router.get("/saveEc2Services", awsController.saveEc2Services);
 
 router.get("/getEC2Details", awsController.getCPUdetails);
 
-router.get("/getStorageDetails", awsController.getDataStorageDetails);
-
 router.get("/getEc2Services/:accountId", awsController.getEc2Services);
 
 router.get("/getEc2StorageUtilization/:accountId", awsController.getEc2StorageUtilization);
