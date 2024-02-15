@@ -1,6 +1,7 @@
 const awsConfig = require("./awsConfig.service");
 const { EC2 } = require("../models");
 const { exec } = require("child_process");
+const Ec2Details = require("../models/ec2.model");
 
 const AWS = awsConfig();
 const sts = new AWS.STS();
@@ -90,6 +91,8 @@ const getCpuDetailsService = async () => {
     RoleSessionName: dynamicSessionName,
   };
 
+  const results = [];
+
   try {
     const data = await sts.assumeRole(assumeRoleParams).promise();
 
@@ -103,39 +106,46 @@ const getCpuDetailsService = async () => {
 
     // CloudWatch API
     const cloudwatch = new AWS.CloudWatch();
+    let data_c;
+
+    const instanceIds = await Ec2Details.find({
+      accountId: "767397878280",
+    }).select("instanceId"); // Example array of instance IDs
 
     // Parameters for GetMetricStatistics
-    const params = {
-      StartTime: new Date(Date.now() - 600000), // 10 minutes ago
-      EndTime: new Date(),
-      MetricName: "CPUUtilization",
-      Namespace: "AWS/EC2",
-      Period: 3600,
-      Statistics: ["Maximum"],
-      Dimensions: [
-        {
-          Name: "InstanceId",
-          Value: "i-0a14b796b6a5c7958",
-        },
-      ],
-    };
+    for (const instanceId of instanceIds) {
+      const params = {
+        StartTime: new Date(Date.now() - 600000), // 10 minutes ago
+        EndTime: new Date(),
+        MetricName: "CPUUtilization",
+        Namespace: "AWS/EC2",
+        Period: 3600,
+        Statistics: ["Maximum"],
+        Dimensions: [
+          {
+            Name: "InstanceId",
+            Value: instanceId.instanceId,
+          },
+        ],
+      };
 
-    // Fetch CPUUtilization metric
-    const ec2 = new AWS.EC2();
-    const data_c = await cloudwatch.getMetricStatistics(params).promise();
-    const volumes = await ec2.describeVolumes().promise();
-    console.log(data_c);
-    return datas = {
-      "metrics" : data_c,
-      "volumes" : volumes
+      // Fetch CPUUtilization metric
+
+      data_c = await cloudwatch.getMetricStatistics(params).promise();
+      results.push({ instanceId, data: data_c.Datapoints });
     }
-    
+    const ec2 = new AWS.EC2();
+    const volumes = await ec2.describeVolumes().promise();
+
+    return (datas = {
+      metrics: results,
+      volumes: volumes,
+    });
   } catch (error) {
     console.error("Error:", error);
     throw error; // Rethrow the error for handling outside this function if needed
   }
 };
-
 
 const getDataStorageDetails = async () => {
   const sts = new AWS.STS();
