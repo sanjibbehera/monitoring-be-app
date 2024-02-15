@@ -142,8 +142,25 @@ const getCpuDetailsService = async () => {
       volumes: volumes,
     });
   } catch (error) {
-    console.error("Error:", error);
-    throw error; // Rethrow the error for handling outside this function if needed
+    // If the error is due to expired credentials, refresh the credentials and retry
+    if (error.code === "ExpiredToken") {
+      // Refresh the assumed role
+      data = await sts.assumeRole(assumeRoleParams).promise();
+
+      // Update the credentials with new temporary credentials
+      credentials = {
+        accessKeyId: data.Credentials.AccessKeyId,
+        secretAccessKey: data.Credentials.SecretAccessKey,
+        sessionToken: data.Credentials.SessionToken,
+      };
+      AWS.config.update({ credentials });
+
+      // Retry the operation
+      return await getCpuDetailsService();
+    } else {
+      console.error("Error:", error);
+      throw error; // Rethrow the error for handling outside this function if needed
+    }
   }
 };
 
