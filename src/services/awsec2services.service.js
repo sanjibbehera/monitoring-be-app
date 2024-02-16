@@ -235,9 +235,20 @@ const getEc2StorageUtilization = async (accountId) => {
     accountId: accountId,
   });
 
+  let count = 0;
+  let mean = 0;
+
+  for (const cpu of data_cpu) {
+    mean = mean + cpu.cpuData[0].Maximum;
+    count++;
+  }
+
+  console.log(count);
+
   const info = {
     data_storage: data_storage,
     data_cpu: data_cpu,
+    average: mean / count,
   };
 
   return info;
