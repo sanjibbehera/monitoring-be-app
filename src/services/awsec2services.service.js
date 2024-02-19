@@ -254,10 +254,56 @@ const getEc2StorageUtilization = async (accountId) => {
   return info;
 };
 
+const getEc2StorageUtilizationL = async (accountId) => {
+  const getInstances = await Ec2Details.find({ accountId: accountId }).select(
+    "instanceId"
+  );
+  const instanceIds = [];
+
+  getInstances.forEach((instance) => {
+    instanceIds.push(instance.instanceId);
+  });
+
+  const data_storage = await EC2storage.find({
+    accountId: accountId,
+    instanceId: { $in: instanceIds }, // Filter by instances in the instanceIds array
+  })
+    .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
+    .limit(instanceIds.length);
+
+  const data_cpu = await EC2utilization.find({
+    accountId: accountId,
+    instanceId: { $in: instanceIds }, // Filter by instances in the instanceIds array
+  })
+    .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
+    .limit(instanceIds.length);
+
+  const data_cpu_mean = await EC2utilization.find({
+    accountId: accountId,
+  });
+
+  let count = 0;
+  let mean = 0;
+
+  for (const cpu of data_cpu_mean) {
+    mean = mean + cpu.cpuData[0].Maximum;
+    count++;
+  }
+
+  const info = {
+    data_storage: data_storage,
+    data_cpu: data_cpu,
+    average: mean / count,
+  };
+
+  return info;
+};
+
 module.exports = {
   getSubscribedServices,
   createServiceDetails,
   getCpuDetailsService,
   getEc2ServicesData,
   getEc2StorageUtilization,
+  getEc2StorageUtilizationL,
 };
