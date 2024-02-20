@@ -6,3 +6,4 @@ module.exports.accountValidationService = require('./accountValidation.service')
 module.exports.awsServices = require('./awsec2services.service');
 module.exports.awsConfig = require('./awsConfig.service');
 module.exports.s3Services = require('./s3services.service');
+module.exports.lambdaService = require('./lambda.service');

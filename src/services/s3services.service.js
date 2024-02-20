@@ -60,7 +60,7 @@ async function listS3Buckets() {
                     const totalSizeBytes = Contents.reduce((total, obj) => total + obj.Size, 0);
                     const totalSizeGB = totalSizeBytes / (1024 * 1024 * 1024); // Convert bytes to gigabytes
 
-                    console.log(`Total size: ${totalSizeGB.toFixed(2)} GB`);
+                    console.log(totalSizeBytes / (1024 * 1024));
 
                     const bucketInfo = {
                         accountId: 767397878280,
