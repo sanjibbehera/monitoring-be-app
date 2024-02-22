@@ -226,29 +226,13 @@ const getEc2ServicesData = async (accountId) => {
   return data;
 };
 
-const getEc2StorageUtilization = async (accountId) => {
-  const data_storage = await EC2storage.find({
-    accountId: accountId,
-  });
-
+const getCPUHistory = async (accountId) => {
   const data_cpu = await EC2utilization.find({
     accountId: accountId,
   });
 
-  let count = 0;
-  let mean = 0;
-
-  for (const cpu of data_cpu) {
-    mean = mean + cpu.cpuData[0].Maximum;
-    count++;
-  }
-
-  console.log(count);
-
   const info = {
-    data_storage: data_storage,
-    data_cpu: data_cpu,
-    average: mean / count,
+    data_cpu: data_cpu
   };
 
   return info;
@@ -299,11 +283,13 @@ const getEc2StorageUtilizationL = async (accountId) => {
   return info;
 };
 
+
+
 module.exports = {
   getSubscribedServices,
   createServiceDetails,
   getCpuDetailsService,
   getEc2ServicesData,
-  getEc2StorageUtilization,
+  getCPUHistory,
   getEc2StorageUtilizationL,
 };

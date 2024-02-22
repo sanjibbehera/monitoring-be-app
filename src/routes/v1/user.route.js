@@ -17,11 +17,13 @@ router.get("/getEC2Details", awsController.getCPUdetails);
 
 router.get("/getEc2Services/:accountId", awsController.getEc2Services);
 
-//router.get("/getEc2StorageUtilization/:accountId", awsController.getEc2StorageUtilization);
+router.get("/getCPUHistory/:accountId", awsController.getCPUHistory);
 
 router.get("/getEc2StorageUtilization/:accountId", awsController.getEc2StorageUtilizationL);
 
 router.get("/saves3data", s3Controller.getBucketList);
 router.get("/gets3data/:accountId", s3Controller.getS3Data);
+
+//router.get("/saveLambdaList", lambdaController.saveLambdaList);
 
 module.exports = router;

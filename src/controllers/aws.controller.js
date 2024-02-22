@@ -133,10 +133,10 @@ const getDataStorageDetails = async (req, res) => {
   }
 };
 
-const getEc2StorageUtilization = async (req, res) => {
-  const data = await awsServices.getEc2StorageUtilization(req.params.accountId);
+const getCPUHistory = async (req, res) => {
+  const data = await awsServices.getCPUHistory(req.params.accountId);
   if (data) {
-    res.status(201).send({ cpu: data.data_cpu, disk: data.data_storage , average : data.average });
+    res.status(201).send({ cpu: data.data_cpu });
   } else {
     res.status(500).send("Not Found");
   }
@@ -155,6 +155,6 @@ module.exports = {
   getCPUdetails,
   getEc2Services,
   getDataStorageDetails,
-  getEc2StorageUtilization,
-  getEc2StorageUtilizationL
+  getEc2StorageUtilizationL,
+  getCPUHistory
 };

@@ -3,10 +3,9 @@ const { awsServices } = require("../services");
 
 
 const saveCPUDataCron = () => {
-    cron.schedule("*/1 * * * *", async () => {
-        console.log("hi cron")
+    cron.schedule("*/15 * * * *", async () => {
         await awsServices.getCpuDetailsService();
-        console.log("saving every minute")
+        console.log("saving every 15 minute")
         
     })
 }
