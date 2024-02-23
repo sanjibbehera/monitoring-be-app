@@ -232,7 +232,7 @@ const getCPUHistory = async (accountId) => {
   });
 
   const info = {
-    data_cpu: data_cpu
+    data_cpu: data_cpu,
   };
 
   return info;
@@ -283,7 +283,19 @@ const getEc2StorageUtilizationL = async (accountId) => {
   return info;
 };
 
+const getInstances = async () => {
+  const getInstances = await Ec2Details.find();
+  //console.log(getInstances)
+  const accounts = {};
 
+  for(const instance of getInstances){
+    if (!accounts[instance.accountId]) {
+      accounts[instance.accountId] = []; // Initialize array if it doesn't exist
+    }
+    accounts[instance.accountId].push(instance.instanceId);
+  }
+  return accounts;
+};
 
 module.exports = {
   getSubscribedServices,
@@ -292,4 +304,5 @@ module.exports = {
   getEc2ServicesData,
   getCPUHistory,
   getEc2StorageUtilizationL,
+  getInstances
 };

@@ -24,6 +24,10 @@ router.get("/getEc2StorageUtilization/:accountId", awsController.getEc2StorageUt
 router.get("/saves3data", s3Controller.getBucketList);
 router.get("/gets3data/:accountId", s3Controller.getS3Data);
 
+router.get("/getInstances", awsController.getInstances);
+
+
+
 //router.get("/saveLambdaList", lambdaController.saveLambdaList);
 
 module.exports = router;
