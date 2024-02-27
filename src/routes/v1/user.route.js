@@ -26,6 +26,8 @@ router.get("/gets3data/:accountId", s3Controller.getS3Data);
 
 router.get("/getInstances", awsController.getInstances);
 
+router.get("/getInstanceDetails/:Id", awsController.getInstanceDetails);
+
 
 
 //router.get("/saveLambdaList", lambdaController.saveLambdaList);

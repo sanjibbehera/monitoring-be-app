@@ -284,17 +284,50 @@ const getEc2StorageUtilizationL = async (accountId) => {
 };
 
 const getInstances = async () => {
-  const getInstances = await Ec2Details.find();
+  const getInstances = await Ec2Details.find().sort({ createdAt: -1 });
   //console.log(getInstances)
   const accounts = {};
 
   for(const instance of getInstances){
-    if (!accounts[instance.accountId]) {
-      accounts[instance.accountId] = []; // Initialize array if it doesn't exist
+
+    const maskedAccountId = maskAccountId(instance.accountId);
+    if (!accounts[maskedAccountId]) {
+      accounts[maskedAccountId] = []; // Initialize array if it doesn't exist
     }
-    accounts[instance.accountId].push(instance.instanceId);
+
+     // Masking instanceId
+     const maskedInstanceId = maskInstanceId(instance.instanceId);
+
+      // Check if the object with instance._id and maskedInstanceId already exists
+    const existingInstance = accounts[maskedAccountId].find(obj => obj.instance === maskedInstanceId);
+    if (!existingInstance) {
+      accounts[maskedAccountId].push({"id": instance._id, "instance": maskedInstanceId});
+    }
+
   }
   return accounts;
+};
+
+// Function to mask instanceId
+function maskInstanceId(instanceId) {
+  const prefix = instanceId.substring(0, 2); // Get the first two characters
+  const suffix = instanceId.substring(9, 13); // Get characters 9 through 14
+  const suffix2 = instanceId.substring(14, 19);
+  return `${prefix}***${suffix}***${suffix2}`;
+}
+
+function maskAccountId(accountId) {
+  const prefix = accountId.substring(0, 2); // Get the first two characters
+  const suffix = accountId.substring(9, 12); // Get characters 9 through 14
+  return `${prefix}***${suffix}`;
+}
+
+const getInstanceDetails = async (id) => {
+  const instanceInfo = await Ec2Details.find({
+    _id: id,
+  });
+
+  return instanceInfo;
 };
 
 module.exports = {
@@ -304,5 +337,6 @@ module.exports = {
   getEc2ServicesData,
   getCPUHistory,
   getEc2StorageUtilizationL,
-  getInstances
+  getInstances,
+  getInstanceDetails
 };

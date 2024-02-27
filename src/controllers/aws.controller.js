@@ -159,6 +159,17 @@ const getInstances = async(req,res) =>{
     res.status(500).send("Not Found");
   }
 }
+
+const getInstanceDetails = async (req, res) => {
+  const data = await awsServices.getInstanceDetails(req.params.Id);
+  if (data) {
+    res.status(201).send({ data });
+  } else {
+    res.status(500).send("Not Found");
+  }
+};
+
+
 module.exports = {
   saveEc2Services,
   getCPUdetails,
@@ -166,5 +177,6 @@ module.exports = {
   getDataStorageDetails,
   getEc2StorageUtilizationL,
   getCPUHistory,
-  getInstances
+  getInstances,
+  getInstanceDetails
 };
