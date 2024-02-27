@@ -119,7 +119,7 @@ async function listS3Buckets() {
 const getS3Data = async (accountId) => {
   const data = S3.find({
     accountId: accountId,
-  });
+  }).select('-accountId');
 
   return data;
 };

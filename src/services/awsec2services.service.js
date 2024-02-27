@@ -229,7 +229,7 @@ const getEc2ServicesData = async (accountId) => {
 const getCPUHistory = async (accountId) => {
   const data_cpu = await EC2utilization.find({
     accountId: accountId,
-  });
+  }).select('-accountId');
 
   const info = {
     data_cpu: data_cpu,
@@ -251,14 +251,14 @@ const getEc2StorageUtilizationL = async (accountId) => {
   const data_storage = await EC2storage.find({
     accountId: accountId,
     instanceId: { $in: instanceIds }, // Filter by instances in the instanceIds array
-  })
+  }).select("-accountId")
     .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
     .limit(instanceIds.length);
 
   const data_cpu = await EC2utilization.find({
     accountId: accountId,
     instanceId: { $in: instanceIds }, // Filter by instances in the instanceIds array
-  })
+  }).select("-accountId")
     .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
     .limit(instanceIds.length);
 
