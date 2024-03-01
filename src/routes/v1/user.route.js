@@ -22,6 +22,7 @@ router.get("/getCPUHistory/:accountId", awsController.getCPUHistory);
 router.get("/getEc2StorageUtilization/:accountId", awsController.getEc2StorageUtilizationL);
 
 router.get("/saves3data", s3Controller.getBucketList);
+
 router.get("/gets3data/:accountId", s3Controller.getS3Data);
 
 router.get("/getInstances", awsController.getInstances);
@@ -29,7 +30,115 @@ router.get("/getInstances", awsController.getInstances);
 router.get("/getInstanceDetails/:Id", awsController.getInstanceDetails);
 
 
-
-//router.get("/saveLambdaList", lambdaController.saveLambdaList);
-
 module.exports = router;
+
+
+/**
+ * @swagger
+ * tags:
+ *   name: EC2
+ *   description: APIs related EC2 service
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   name: S3
+ *   description: APIs related S3 service
+ */
+
+
+/**
+ * @swagger
+ * /users/getCPUHistory/{accountId}:
+ *   get:
+ *     summary: Get CPU data
+ *     tags: [EC2]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: AccountId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Account ID of the client
+ *     responses:
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *       "401":
+ *         $ref: '#/components/responses/Unauthorized'
+ *       "403":
+ *         $ref: '#/components/responses/Forbidden'
+ *       "404":
+ *         $ref: '#/components/responses/NotFound'
+ *
+ *
+ */
+
+
+/**
+ * @swagger
+ * /users/getEc2StorageUtilization/{accountId}:
+ *   get:
+ *     summary: Get storage data
+ *     tags: [EC2]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: Account ID
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Account ID of the client
+ *     responses:
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *       "401":
+ *         $ref: '#/components/responses/Unauthorized'
+ *       "403":
+ *         $ref: '#/components/responses/Forbidden'
+ *       "404":
+ *         $ref: '#/components/responses/NotFound'
+ *
+ *
+ */
+
+
+
+/**
+ * @swagger
+ * /users/gets3data/{accountId}:
+ *   get:
+ *     summary: Get S3 data
+ *     tags: [S3]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: Account ID
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Account ID of the client
+ *     responses:
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *       "401":
+ *         $ref: '#/components/responses/Unauthorized'
+ *       "403":
+ *         $ref: '#/components/responses/Forbidden'
+ *       "404":
+ *         $ref: '#/components/responses/NotFound'
+ *
+ *
+ */
+
+

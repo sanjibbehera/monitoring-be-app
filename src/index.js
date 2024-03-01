@@ -3,15 +3,6 @@ const app = require("./app");
 const config = require("./config/config");
 const logger = require("./config/logger");
 const myCronJob = require("./crons/ec2_s3Cron");
-const redis = require("redis");
-
-//let redisClient;
-
-// (async () => {
-//   redisClient = redis.createClient();
-//   redisClient.on("error", (error) => console.error(`Error : ${error}`));
-//   await redisClient.connect();
-// })();
 
 let server;
 mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {

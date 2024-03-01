@@ -1,15 +1,25 @@
 const redis = require("redis");
 
 let redisClient;
+let isConnected = false;
 
 (async () => {
-  redisClient = redis.createClient();
+  try {
+    redisClient = redis.createClient();
 
-  redisClient.on("error", (error) => console.error(`Error : ${error}`));
+    redisClient.on("error", (error) => {
+      if (!isConnected) {
+        console.error(`Error connecting to Redis: ${error}`);
+        isConnected = true; // Set isConnected to true after the first error
+      }
+    });
 
-  await redisClient.connect();
+    await redisClient.connect();
+  } catch (error) {
+    console.error("Error connecting to Redis:", error.message);
+  }
 })();
 
 module.exports = {
     redisClient,
-  };
+};
