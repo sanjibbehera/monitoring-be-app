@@ -10,7 +10,7 @@ let isConnected = false;
     redisClient.on("error", (error) => {
       if (!isConnected) {
         console.error(`Error connecting to Redis: ${error}`);
-        isConnected = true; // Set isConnected to true after the first error
+        isConnected = true; 
       }
     });
 
