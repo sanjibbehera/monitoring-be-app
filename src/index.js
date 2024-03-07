@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const app = require("./app");
 const config = require("./config/config");
 const logger = require("./config/logger");
-const myCronJob = require("./crons/ec2_s3Cron");
+//const myCronJob = require("./crons/ec2_s3Cron");
 
 let server;
 mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {

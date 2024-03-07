@@ -1,19 +1,17 @@
 const awsConfig = require("./awsConfig.service");
 const { S3 } = require("../models");
-const { util } = require("prettier");
-const { refreshAssumeCredentials } = require("./assumeRoleCredentials.service");
 
 const AWS = awsConfig();
 const sts = new AWS.STS();
 
 const getS3BucketList = async () => {
+  const assumeRoleParams = {
+    RoleArn: "arn:aws:iam::767397878280:role/MonitoringAppsAWSAccessRole", // Specify the ARN of the role to assume
+    RoleSessionName: "Monitoring_session", // Provide a session name
+  };
+
   try {
     //const dynamicSessionName = `EC2Services_role2_${Date.now()}`;
-    const assumeRoleParams = {
-      RoleArn: "arn:aws:iam::767397878280:role/MonitoringAppsAWSAccessRole", // Specify the ARN of the role to assume
-      RoleSessionName: "Monitoring_session", // Provide a session name
-    };
-
     const assumedRole = await sts.assumeRole(assumeRoleParams).promise();
 
     // Extract temporary credentials from the assumed role response
@@ -30,10 +28,10 @@ const getS3BucketList = async () => {
   } catch (error) {
     if (error.code === "ExpiredToken") {
       // Refresh the assumed role
-      data = await sts.assumeRole(assumeRoleParams).promise();
+      const data = await sts.assumeRole(assumeRoleParams).promise();
 
       // Update the credentials with new temporary credentials
-      credentials = {
+      const credentials = {
         accessKeyId: data.Credentials.AccessKeyId,
         secretAccessKey: data.Credentials.SecretAccessKey,
         sessionToken: data.Credentials.SessionToken,
@@ -119,7 +117,7 @@ async function listS3Buckets() {
 const getS3Data = async (accountId) => {
   const data = S3.find({
     accountId: accountId,
-  }).select('-accountId');
+  }).select("-accountId");
 
   return data;
 };

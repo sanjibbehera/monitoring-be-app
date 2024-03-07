@@ -10,7 +10,7 @@ let isConnected = false;
     redisClient.on("error", (error) => {
       if (!isConnected) {
         console.error(`Error connecting to Redis: ${error}`);
-        isConnected = true; 
+        isConnected = true;
       }
     });
 
@@ -21,5 +21,5 @@ let isConnected = false;
 })();
 
 module.exports = {
-    redisClient,
+  redisClient,
 };

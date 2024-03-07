@@ -6,10 +6,10 @@ const sts = new AWS.STS();
 const refreshAssumeCredentials = async (assumeRoleParams) => {
   try {
     // Refresh the assumed role
-    data = await sts.assumeRole(assumeRoleParams).promise();
+    const data = await sts.assumeRole(assumeRoleParams).promise();
 
     // Update the credentials with new temporary credentials
-    credentials = {
+    const credentials = {
       accessKeyId: data.Credentials.AccessKeyId,
       secretAccessKey: data.Credentials.SecretAccessKey,
       sessionToken: data.Credentials.SessionToken,

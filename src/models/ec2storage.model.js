@@ -95,9 +95,6 @@ storageSchema.plugin(toJSON);
 /**
  * @typedef Setting
  */
-const EC2storage = mongoose.model(
-  "EC2storage",
-  storageSchema
-);
+const EC2storage = mongoose.model("EC2storage", storageSchema);
 
 module.exports = EC2storage;

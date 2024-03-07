@@ -14,7 +14,7 @@ const register = catchAsync(async (req, res) => {
     req.body.accountId,
     req.body.region
   );
-  
+
   if (isValidAccount) {
     const user = await userService.createUser(req.body);
     const tokens = await tokenService.generateAuthTokens(user);

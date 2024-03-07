@@ -1,21 +1,19 @@
 const awsConfig = require("./awsConfig.service");
 const { EC2 } = require("../models");
-const { exec } = require("child_process");
 const Ec2Details = require("../models/ec2.model");
 const EC2storage = require("../models/ec2storage.model");
 const EC2utilization = require("../models/ec2utilization.model");
-const assumeCredentials = require("./assumeRoleCredentials.service");
 
 const AWS = awsConfig();
 const sts = new AWS.STS();
 
 const getSubscribedServices = async () => {
-  try {
-    const assumeRoleParams = {
-      RoleArn: "arn:aws:iam::767397878280:role/MonitoringAppsAWSAccessRole", // Specify the ARN of the role to assume
-      RoleSessionName: "session-name", // Provide a session name
-    };
+  const assumeRoleParams = {
+    RoleArn: "arn:aws:iam::767397878280:role/MonitoringAppsAWSAccessRole", // Specify the ARN of the role to assume
+    RoleSessionName: "session-name", // Provide a session name
+  };
 
+  try {
     const assumedRole = await sts.assumeRole(assumeRoleParams).promise();
 
     // Extract temporary credentials from the assumed role response
@@ -34,10 +32,10 @@ const getSubscribedServices = async () => {
     // If the error is due to expired credentials, refresh the credentials and retry
     if (error.code === "ExpiredToken") {
       // Refresh the assumed role
-      data = await sts.assumeRole(assumeRoleParams).promise();
+      const data = await sts.assumeRole(assumeRoleParams).promise();
 
       // Update the credentials with new temporary credentials
-      credentials = {
+      const credentials = {
         accessKeyId: data.Credentials.AccessKeyId,
         secretAccessKey: data.Credentials.SecretAccessKey,
         sessionToken: data.Credentials.SessionToken,
@@ -104,13 +102,12 @@ const createServiceDetails = async (data) => {
 
 const getCpuDetailsService = async () => {
   const results = [];
+  const assumeRoleParams = {
+    RoleArn: "arn:aws:iam::767397878280:role/MonitoringAppsAWSAccessRole",
+    RoleSessionName: "Monitoring_session",
+  };
 
   try {
-    const assumeRoleParams = {
-      RoleArn: "arn:aws:iam::767397878280:role/MonitoringAppsAWSAccessRole",
-      RoleSessionName: "Monitoring_session",
-    };
-
     const data = await sts.assumeRole(assumeRoleParams).promise();
 
     // Configuring AWS SDK with temporary credentials
@@ -199,10 +196,10 @@ const getCpuDetailsService = async () => {
     if (error.code === "ExpiredToken") {
       // Refresh the assumed role
       // await assumeCredentials.refreshAssumeCredentials(assumeRoleParams);
-      data = await sts.assumeRole(assumeRoleParams).promise();
+      const data = await sts.assumeRole(assumeRoleParams).promise();
 
       // Update the credentials with new temporary credentials
-      credentials = {
+      const credentials = {
         accessKeyId: data.Credentials.AccessKeyId,
         secretAccessKey: data.Credentials.SecretAccessKey,
         sessionToken: data.Credentials.SessionToken,
@@ -229,7 +226,7 @@ const getEc2ServicesData = async (accountId) => {
 const getCPUHistory = async (accountId) => {
   const data_cpu = await EC2utilization.find({
     accountId: accountId,
-  }).select('-accountId');
+  }).select("-accountId");
 
   const info = {
     data_cpu: data_cpu,
@@ -251,14 +248,16 @@ const getEc2StorageUtilizationL = async (accountId) => {
   const data_storage = await EC2storage.find({
     accountId: accountId,
     instanceId: { $in: instanceIds }, // Filter by instances in the instanceIds array
-  }).select("-accountId")
+  })
+    .select("-accountId")
     .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
     .limit(instanceIds.length);
 
   const data_cpu = await EC2utilization.find({
     accountId: accountId,
     instanceId: { $in: instanceIds }, // Filter by instances in the instanceIds array
-  }).select("-accountId")
+  })
+    .select("-accountId")
     .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
     .limit(instanceIds.length);
 
@@ -288,22 +287,25 @@ const getInstances = async () => {
   //console.log(getInstances)
   const accounts = {};
 
-  for(const instance of getInstances){
-
+  for (const instance of getInstances) {
     const maskedAccountId = maskAccountId(instance.accountId);
     if (!accounts[maskedAccountId]) {
       accounts[maskedAccountId] = []; // Initialize array if it doesn't exist
     }
 
-     // Masking instanceId
-     const maskedInstanceId = maskInstanceId(instance.instanceId);
+    // Masking instanceId
+    const maskedInstanceId = maskInstanceId(instance.instanceId);
 
-      // Check if the object with instance._id and maskedInstanceId already exists
-    const existingInstance = accounts[maskedAccountId].find(obj => obj.instance === maskedInstanceId);
+    // Check if the object with instance._id and maskedInstanceId already exists
+    const existingInstance = accounts[maskedAccountId].find(
+      (obj) => obj.instance === maskedInstanceId
+    );
     if (!existingInstance) {
-      accounts[maskedAccountId].push({"id": instance._id, "instance": maskedInstanceId});
+      accounts[maskedAccountId].push({
+        id: instance._id,
+        instance: maskedInstanceId,
+      });
     }
-
   }
   return accounts;
 };
@@ -338,5 +340,5 @@ module.exports = {
   getCPUHistory,
   getEc2StorageUtilizationL,
   getInstances,
-  getInstanceDetails
+  getInstanceDetails,
 };
